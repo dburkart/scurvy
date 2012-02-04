@@ -28,7 +28,7 @@
  *  - 	: of the form a - b
  *  *	: of the form a * b
  *  = 	: of the form a = b
- * 	!= 	: of the form a != b
+ *  != 	: of the form a != b
  *  >	: of the form a > b
  *  <	: of the form a < b
  *  >=	: of the form a >= b
