@@ -24,7 +24,7 @@
  * An expression is a statement that can be evaluated to some answer. It can be
  * an equation comparing two statements, some kind of mathematical statement, or
  * whatever. Currently, these are operators accounted for:
- *	+ 	: of the form a + b
+ *  + 	: of the form a + b
  *  - 	: of the form a - b
  *  *	: of the form a * b
  *  = 	: of the form a = b
@@ -33,7 +33,7 @@
  *  <	: of the form a < b
  *  >=	: of the form a >= b
  *  <=	: of the form a <= b
- *	! 	: of the form !a
+ *  ! 	: of the form !a
  *  ()	: can encapsulate any sub-expression to change order of operations.
  *
  * Valid values for a and b are:
@@ -79,8 +79,8 @@ class atom {
 }
 
 class expression {
-	private $expression 	= '';
-	private $atomList 		= array();
+	private $expression		= '';
+	private $atomList		= array();
 	private $eval			= null;
 	
 	public function __construct($expr) {
@@ -284,8 +284,8 @@ class expression {
 	 * @param i the offset we are starting from
 	 */
 	public function decomposeE($expr, $i) {
-		$buffer = '';
-		$atomList = array();
+		$buffer		= '';
+		$atomList	= array();
 		
 		$count = strLen($expr);
 		while ($i < $count) {
@@ -369,8 +369,8 @@ class expression {
 	 *		expression and the stack of atoms that were decomposed
 	 */
 	public function decomposeParenE($expr, $i) {
-		$buffer = '';
-		$atomList = array();
+		$buffer		= '';
+		$atomList	= array();
 		
 		$parenCount = 1;
 		$i += 1;

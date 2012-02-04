@@ -37,7 +37,7 @@
  * 		  same line, i.e. {if var}...{/if} or {if}{if}...{/if}..., this breaks
  * 		  everything
  *
- * \author Dana Burkart
+ * @author Dana Burkart
  */	
  
 require_once 'expression.php';
