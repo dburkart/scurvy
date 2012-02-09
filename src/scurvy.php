@@ -177,6 +177,16 @@ class Scurvy {
 		foreach($this->incTemplates as $sub)
 			$sub->set($var, $val);
 	}
+	
+	//--- Protected functions ------------------------------------------------//
+	
+	protected function require_file($file) {
+		if (file_exists($this->template_dir . $file)) {
+			require_once $this->template_dir . $file;
+			return true;
+		}
+		return false;
+	}
 
 	//--- Private functions --------------------------------------------------//
 	
@@ -323,14 +333,6 @@ class Scurvy {
 		}
 		
 		return new Scurvy($subTmpl, $this->template_dir, $subName);
-	}
-	
-	private function require_file($file) {
-		if (file_exists($this->template_dir . $file)) {
-			require_once $this->template_dir . $file;
-			return true;
-		}
-		return false;
 	}
 }
 
