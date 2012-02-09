@@ -275,7 +275,7 @@ class Scurvy {
 			preg_match_all($this->RE_EXPR, $this->strings[$i], $matches);
 			if (!empty($matches[0])) {
 				foreach ($matches[1] as $match) {
-					$expr = new expression($match);
+					$expr = new Expression($match);
 					$exprId = $expr->getExpressionId();
 					
 					if (!isset($this->expressions[$exprId]))

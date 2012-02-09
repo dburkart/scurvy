@@ -61,7 +61,7 @@ define("EXPR_NOT", 12);						// Not operator
 
 // An atom is any entity that can't be broken down further. Operators, variables,
 // numbers, and strings are all atoms.
-class atom {
+class Atom {
 	public $type;
 	public $val;
 	public $width;
@@ -78,7 +78,7 @@ class atom {
 	}
 }
 
-class expression {
+class Expression {
 	private $expression		= '';
 	private $atomList		= array();
 	private $eval			= null;
@@ -219,20 +219,20 @@ class expression {
 				$pos = $i;
 				
 				if ($expr[$pos - 1] == '!') 
-					$atom = new atom(EXPR_NEQ);
+					$atom = new Atom(EXPR_NEQ);
 				else
-					$atom = new atom(EXPR_EQU);
+					$atom = new Atom(EXPR_EQU);
 			} else if ($expr[$i] == '>') {
 				if (!is_null($pos))
 					die('Malformed equation: Only one terminal allowed.');
 				$pos = $i;
 				
 				if ($expr[$pos + 1] == '=') {
-					$atom = new atom(EXPR_GEQ);
+					$atom = new Atom(EXPR_GEQ);
 					$pos += 1;
 					$i += 1;
 				} else {
-					$atom = new atom(EXPR_GRE);
+					$atom = new Atom(EXPR_GRE);
 				}
 			} else if ($expr[$i] == '<') {
 				if (!is_null($pos))
@@ -240,11 +240,11 @@ class expression {
 				$pos = $i;
 				
 				if ($expr[$pos + 1] == '=') {
-					$atom = new atom(EXPR_LEQ);
+					$atom = new Atom(EXPR_LEQ);
 					$pos += 1;
 					$i += 1;
 				} else {
-					$atom = new atom(EXPR_LES);
+					$atom = new Atom(EXPR_LES);
 				}
 			}
 			$i++;
@@ -305,7 +305,7 @@ class expression {
 					}
 					list($i, $lst) = $this->decomposeE($expr, $i+1);
 					$atomList = array_merge($atomList, $lst);
-					$atomList[] = new atom(EXPR_NOT);
+					$atomList[] = new Atom(EXPR_NOT);
 					break;
 				case '*':
 					if (!empty($buffer)) {
@@ -314,7 +314,7 @@ class expression {
 					}
 					list($i, $lst) = $this->decomposeE($expr, $i+1);
 					$atomList = array_merge($atomList, $lst);
-					$atomList[] = new atom(EXPR_MUL);
+					$atomList[] = new Atom(EXPR_MUL);
 					break;
 				case '/':
 					if (!empty($buffer)) {
@@ -323,7 +323,7 @@ class expression {
 					}
 					list($i, $lst) = $this->decomposeE($expr, $i+1);
 					$atomList = array_merge($atomList, $lst);
-					$atomList[] = new atom(EXPR_DIV);
+					$atomList[] = new Atom(EXPR_DIV);
 					break;
 				case '+':
 					if (!empty($buffer)) {
@@ -332,7 +332,7 @@ class expression {
 					}
 					list($i, $lst) = $this->decomposeE($expr, $i+1);
 					$atomList = array_merge($atomList, $lst);
-					$atomList[] = new atom(EXPR_POS);
+					$atomList[] = new Atom(EXPR_POS);
 					break;	
 				case '-':
 					if (!empty($buffer)) {
@@ -341,7 +341,7 @@ class expression {
 					}
 					list($i, $lst) = $this->decomposeE($expr, $i+1);
 					$atomList = array_merge($atomList, $lst);
-					$atomList[] = new atom(EXPR_NEG);
+					$atomList[] = new Atom(EXPR_NEG);
 					break;	
 				default:
 					$buffer = $buffer . $expr[$i];
@@ -410,7 +410,7 @@ class expression {
 		
 		// Try to make it a variable
 		if (preg_match('/^[a-zA-Z0-9\'_][a-zA-Z0-9\'_-]*$/', $str))
-			return new atom(EXPR_VAR, $str);
+			return new Atom(EXPR_VAR, $str);
 		else {
 			return false;
 		}
