@@ -46,7 +46,7 @@ function runTest($test) {
 // (signifying that the files are the same).
 function getDiff($a, $b) {
 	$diff = array();
-	exec("diff $a $b", $diff);
+	exec("diff -w $a $b", $diff);
 	
 	if ( empty($diff) )
 		return false;
@@ -80,7 +80,22 @@ function test02() {
 	return getDiff('02_include.out', '02_include.run');
 }
 
+function test03() {
+	echo "Testing expressions...";
+	
+	$tmpl = new Scurvy('03_expr.html', './');
+	$tmpl->set('a', 3);
+	$tmpl->set('b', 5);
+	$tmpl->set('c', false);
+	
+	$output = $tmpl->render();
+	file_put_contents('03_expr.run', $output);
+	
+	return getDiff('03_expr.out', '03_expr.run');
+}
+
 // Run our tests.
 runTest('test01');
 runTest('test02');
+runTest('test03');
 
