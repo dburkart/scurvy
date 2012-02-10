@@ -46,6 +46,9 @@ function runTest($test) {
 // (signifying that the files are the same).
 function getDiff($a, $b) {
 	$diff = array();
+	
+	// Run the diff command, pass in -w, because change in whitespace doesn't 
+	// _really_ change the validity of our output
 	exec("diff -w $a $b", $diff);
 	
 	if ( empty($diff) )
@@ -94,8 +97,43 @@ function test03() {
 	return getDiff('03_expr.out', '03_expr.run');
 }
 
+function test04() {
+	echo "Testing if statements...";
+	
+	$tmpl = new Scurvy('04_if.html', './');
+	$tmpl->set('a', 2);
+	$tmpl->set('b', 1);
+	$tmpl->set('c', false);
+	$tmpl->set('d', 4);
+	
+	$output = $tmpl->render();
+	file_put_contents('04_if.run', $output);
+	
+	return getDiff('04_if.out', '04_if.run');
+}
+
+function test05() {
+	echo "Testing foreach loops...";
+	
+	$tmpl = new Scurvy('05_for.html', './');
+	$tmpl->set('thing', array(
+				array( 'var' => 0 ),
+				array( 'var' => 1 ),
+				array( 'var' => 2 ),
+				array( 'var' => 3 ),
+				array( 'var' => 4 ),
+				array( 'var' => 5 ),
+				array( 'var' => 6 )));
+	
+	$output = $tmpl->render();
+	file_put_contents('05_for.run', $output);
+	
+	return getDiff('05_for.out', '05_for.run');
+}
+
 // Run our tests.
 runTest('test01');
 runTest('test02');
 runTest('test03');
-
+runTest('test04');
+runTest('test05');
