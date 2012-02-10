@@ -51,13 +51,14 @@ define("EXPR_POS", 2);						// Addition
 define("EXPR_NEG", 3);						// Subtraction
 define("EXPR_MUL", 4);						// Multiplication
 define("EXPR_DIV", 5);						// Division
-define("EXPR_EQU", 6);						// Equality test
-define("EXPR_NEQ", 7);						// Non-equality test
-define("EXPR_LES", 8);						// Less-than test
-define("EXPR_GRE", 9);						// Greater-than test
-define("EXPR_LEQ", 10);						// Less-than-or-equal test
-define("EXPR_GEQ", 11);						// Greater-than-or-equal test
-define("EXPR_NOT", 12);						// Not operator
+define("EXPR_MOD", 6);						// Modulo
+define("EXPR_EQU", 7);						// Equality test
+define("EXPR_NEQ", 8);						// Non-equality test
+define("EXPR_LES", 9);						// Less-than test
+define("EXPR_GRE", 10);						// Greater-than test
+define("EXPR_LEQ", 11);						// Less-than-or-equal test
+define("EXPR_GEQ", 12);						// Greater-than-or-equal test
+define("EXPR_NOT", 13);						// Not operator
 
 // An atom is any entity that can't be broken down further. Operators, variables,
 // numbers, and strings are all atoms.
@@ -152,6 +153,13 @@ class Expression {
 				case EXPR_DIV:
 					$b = $this->evaluate($registry, true);
 					$this->eval = $this->evaluate($registry, true) / $b;
+					
+					if ($recurse)
+						return $this->eval;
+					break;
+				case EXPR_MOD:
+					$b = $this->evaluate($registry, true);
+					$this->eval = $this->evaluate($registry, true) % $b;
 					
 					if ($recurse)
 						return $this->eval;
@@ -324,6 +332,15 @@ class Expression {
 					list($i, $lst) = $this->decomposeE($expr, $i+1);
 					$atomList = array_merge($atomList, $lst);
 					$atomList[] = new Atom(EXPR_DIV);
+					break;
+				case '%':
+					if (!empty($buffer)) {
+						$atomList[] = $this->newVar($buffer);
+						$buffer = '';
+					}
+					list($i, $lst) = $this->decomposeE($expr, $i+1);
+					$atomList = array_merge($atomList, $lst);
+					$atomList[] = new Atom(EXPR_MOD);
 					break;
 				case '+':
 					if (!empty($buffer)) {
