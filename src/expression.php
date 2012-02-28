@@ -46,19 +46,20 @@
  */
 
 // Some defines that will be useful
-define("EXPR_VAR", 1);						// Variable
+define("EXPR_VAR", 20);						// Variable
 define("EXPR_POS", 2);						// Addition
 define("EXPR_NEG", 3);						// Subtraction
 define("EXPR_MUL", 4);						// Multiplication
 define("EXPR_DIV", 5);						// Division
 define("EXPR_MOD", 6);						// Modulo
-define("EXPR_EQU", 7);						// Equality test
-define("EXPR_NEQ", 8);						// Non-equality test
-define("EXPR_LES", 9);						// Less-than test
-define("EXPR_GRE", 10);						// Greater-than test
-define("EXPR_LEQ", 11);						// Less-than-or-equal test
-define("EXPR_GEQ", 12);						// Greater-than-or-equal test
+define("EXPR_EQU", -1);						// Equality test
+define("EXPR_NEQ", -2);						// Non-equality test
+define("EXPR_LES", -3);						// Less-than test
+define("EXPR_GRE", -4);						// Greater-than test
+define("EXPR_LEQ", -5);						// Less-than-or-equal test
+define("EXPR_GEQ", -6);						// Greater-than-or-equal test
 define("EXPR_NOT", 13);						// Not operator
+define("EXPR_PAR", 14);						// Parenthesis
 
 // An atom is any entity that can't be broken down further. Operators, variables,
 // numbers, and strings are all atoms.
@@ -214,96 +215,107 @@ class Expression {
 	 * @param expr the expression to decompose
 	 */
 	public function decompose($expr) {
-		$pos = null;
-		
-		$i = 0;
-		$count = strlen($expr);
-		$atom;
-		
-		while ($i < $count) {
-			if ($expr[$i] == '=') {
-				if (!is_null($pos))
-					die('Malformed equation: Only one terminal allowed.');
-				$pos = $i;
-				
-				if ($expr[$pos - 1] == '!') 
-					$atom = new Atom(EXPR_NEQ);
-				else
-					$atom = new Atom(EXPR_EQU);
-			} else if ($expr[$i] == '>') {
-				if (!is_null($pos))
-					die('Malformed equation: Only one terminal allowed.');
-				$pos = $i;
-				
-				if ($expr[$pos + 1] == '=') {
-					$atom = new Atom(EXPR_GEQ);
-					$pos += 1;
-					$i += 1;
-				} else {
-					$atom = new Atom(EXPR_GRE);
-				}
-			} else if ($expr[$i] == '<') {
-				if (!is_null($pos))
-					die('Malformed equation: Only one terminal allowed.');
-				$pos = $i;
-				
-				if ($expr[$pos + 1] == '=') {
-					$atom = new Atom(EXPR_LEQ);
-					$pos += 1;
-					$i += 1;
-				} else {
-					$atom = new Atom(EXPR_LES);
-				}
-			}
-			$i++;
-		}
-		
-		if (!is_null($pos) && $atom->width == 2) {
-			$expr1 = substr($expr, 0, $pos - 1);
-			$expr2 = substr($expr, $pos + 1, $count - ($pos + 1));
-			
-			list($whocares, $this->atomList) = $this->decomposeE($expr1, 0);
-			list($whocares, $lst) = $this->decomposeE($expr2, 0);
-			$this->atomList = array_merge($this->atomList, $lst);
-			$this->atomList[] = $atom;
-			
-			return $this->atomList;
-		} else if (!is_null($pos)) {
-			$expr1 = substr($expr, 0, $pos);
-			$expr2 = substr($expr, $pos + 1, $count - ($pos + 1));
-			
-			list($whocares, $this->atomList) = $this->decomposeE($expr1, 0);
-			list($whocares, $lst) = $this->decomposeE($expr2, 0);
-			$this->atomList = array_merge($this->atomList, $lst);
-			$this->atomList[] = $atom;
-		
-			return $this->atomList;
-		} else {
-			list($whocares, $this->atomList) = $this->decomposeE($expr, 0);
-			
-			return $this->atomList;
-		}
-	}
-	
-	/**
-	 * decomposeE() decomposes the given expression.
-	 *
-	 * @param expr the expression to decompose
-	 * @param i the offset we are starting from
-	 */
-	public function decomposeE($expr, $i) {
 		$buffer		= '';
 		$atomList	= array();
+		$stack		= array();
 		
-		$count = strLen($expr);
+		$buffer 	= '';
+		$count 		= strLen( $expr );
+		
+		$i = 0;
 		while ($i < $count) {
 			switch ($expr[$i]) {
+				case '=':
+					$buffer = trim($buffer);
+					if (!empty($buffer)) {
+						$atomList[] = $this->newVar($buffer);
+						$buffer = '';
+					}
+					
+					while (($top = array_pop($stack)) == true) {
+						if (EXPR_EQU <= $top->type && $top->type != EXPR_PAR) 
+							$atomList[] = $top;
+						else {
+							array_push($stack, $top);
+							break;
+						}
+					}
+					
+					array_push($stack, new Atom(EXPR_EQU));
+					
+					break;
+				case '<':
+					$buffer = trim($buffer);
+					if (!empty($buffer)) {
+						$atomList[] = $this->newVar($buffer);
+						$buffer = '';
+					}
+					
+					$a = EXPR_LES;
+					if ($expr[$i+1] == '=') {
+						$a = EXPR_LEQ;
+						$i += 1;
+					}
+					
+					while (($top = array_pop($stack)) == true) {
+						if ($a <= $top->type && $top->type != EXPR_PAR) 
+							$atomList[] = $top;
+						else {
+							array_push($stack, $top);
+							break;
+						}
+					}
+					
+					array_push($stack, new Atom($a));
+					
+					break;
+				case '>':
+					$buffer = trim($buffer);
+					if (!empty($buffer)) {
+						$atomList[] = $this->newVar($buffer);
+						$buffer = '';
+					}
+					
+					$a = EXPR_GRE;
+					if ($expr[$i+1] == '=') {
+						$a = EXPR_GEQ;
+						$i += 1;
+					}
+					
+					while (($top = array_pop($stack)) == true) {
+						if ($a <= $top->type && $top->type != EXPR_PAR) 
+							$atomList[] = $top;
+						else {
+							array_push($stack, $top);
+							break;
+						}
+					}
+					
+					array_push($stack, new Atom($a));
+					
+					break;
 				case '(':
 					$buffer = trim($buffer);
-					if (!empty($buffer))
-						die("Incorrect Syntax: \"$buffer\" not allowed directly before \"(\"");
-					list($i, $lst) = $this->decomposeParenE($expr, $i);
-					$atomList = array_merge($atomList, $lst);
+					if (!empty($buffer)) {
+						$atomList[] = $this->newVar($buffer);
+						$buffer = '';
+					}
+				
+					array_push($stack, new Atom(EXPR_PAR));
+					break;
+				case ')':
+					$buffer = trim($buffer);
+					if (!empty($buffer)) {
+						$atomList[] = $this->newVar($buffer);
+						$buffer = '';
+					}
+				
+					$top = array_pop($stack);
+					while($top->type != EXPR_PAR && $top != NULL) {
+						$atomList[] = $top;
+						$top = array_pop($stack);
+					}
+					
 					break;
 				case '!':
 					$buffer = trim($buffer);
@@ -311,54 +323,114 @@ class Expression {
 						$atomList[] = $this->newVar($buffer);
 						$buffer = '';
 					}
-					list($i, $lst) = $this->decomposeE($expr, $i+1);
-					$atomList = array_merge($atomList, $lst);
-					$atomList[] = new Atom(EXPR_NOT);
+					
+					$a = EXPR_NOT;
+					if ($expr[$i+1] == '=') {
+						$a = EXPR_NEQ;
+						$i += 1;
+					}
+					
+					while (($top = array_pop( $stack )) == true ) {
+						if ($a < $top->type && $top->type != EXPR_PAR) 
+							$atomList[] = $top;
+						else {
+							array_push($stack, $top);
+							break;
+						}
+					}
+					
+					array_push($stack, new Atom($a));
+					
 					break;
 				case '*':
 					if (!empty($buffer)) {
 						$atomList[] = $this->newVar($buffer);
 						$buffer = '';
 					}
-					list($i, $lst) = $this->decomposeE($expr, $i+1);
-					$atomList = array_merge($atomList, $lst);
-					$atomList[] = new Atom(EXPR_MUL);
+					
+					while (($top = array_pop($stack)) == true) {
+						if (EXPR_MUL <= $top->type && $top->type != EXPR_PAR) 
+							$atomList[] = $top;
+						else {
+							array_push($stack, $top);
+							break;
+						}
+					}
+					
+					array_push($stack, new Atom(EXPR_MUL));
+					
 					break;
 				case '/':
 					if (!empty($buffer)) {
 						$atomList[] = $this->newVar($buffer);
 						$buffer = '';
 					}
-					list($i, $lst) = $this->decomposeE($expr, $i+1);
-					$atomList = array_merge($atomList, $lst);
-					$atomList[] = new Atom(EXPR_DIV);
+					
+					while (($top = array_pop($stack)) == true) {
+						if (EXPR_DIV <= $top->type && $top->type != EXPR_PAR) 
+							$atomList[] = $top;
+						else {
+							array_push($stack, $top);
+							break;
+						}
+					}
+					
+					array_push($stack, new Atom(EXPR_DIV));
+					
 					break;
 				case '%':
 					if (!empty($buffer)) {
 						$atomList[] = $this->newVar($buffer);
 						$buffer = '';
 					}
-					list($i, $lst) = $this->decomposeE($expr, $i+1);
-					$atomList = array_merge($atomList, $lst);
-					$atomList[] = new Atom(EXPR_MOD);
+					
+					while (($top = array_pop($stack)) == true) {
+						if (EXPR_MOD <= $top->type && $top->type != EXPR_PAR) 
+							$atomList[] = $top;
+						else {
+							array_push($stack, $top);
+							break;
+						}
+					}
+					
+					array_push($stack, new Atom(EXPR_MOD));
+					
 					break;
 				case '+':
 					if (!empty($buffer)) {
 						$atomList[] = $this->newVar($buffer);
 						$buffer = '';
 					}
-					list($i, $lst) = $this->decomposeE($expr, $i+1);
-					$atomList = array_merge($atomList, $lst);
-					$atomList[] = new Atom(EXPR_POS);
+					
+					while (($top = array_pop($stack)) == true) {
+						if (EXPR_POS <= $top->type && $top->type != EXPR_PAR) 
+							$atomList[] = $top;
+						else {
+							array_push($stack, $top);
+							break;
+						}
+					}
+					
+					array_push($stack, new Atom(EXPR_POS));
+					
 					break;	
 				case '-':
 					if (!empty($buffer)) {
 						$atomList[] = $this->newVar($buffer);
 						$buffer = '';
 					}
-					list($i, $lst) = $this->decomposeE($expr, $i+1);
-					$atomList = array_merge($atomList, $lst);
-					$atomList[] = new Atom(EXPR_NEG);
+					
+					while (($top = array_pop($stack)) == true) {
+						if (EXPR_NEG <= $top->type && $top->type != EXPR_PAR) 
+							$atomList[] = $top;
+						else {
+							array_push($stack, $top);
+							break;
+						}
+					}
+					
+					array_push($stack, new Atom(EXPR_NEG));
+					
 					break;	
 				default:
 					$buffer = $buffer . $expr[$i];
@@ -367,52 +439,18 @@ class Expression {
 			$i++;
 		}
 		
-		if (!empty($buffer)) {
+		$buffer = trim($buffer);
+		if (strlen($buffer) > 0) {
 			$atomList[] = $this->newVar($buffer);
+			$buffer = '';
 		}
 		
-		return array($i, $atomList);
-	}
-	
-	/**
-	 * decomposeParenE() decomposes a parenthesized expression, returning the
-	 * resultant stack.
-	 * 
-	 * @param expr the expression to decompose
-	 * @param i the offset into the expression the parenthesized expression
-	 *		occurs.
-	 *
-	 * @return a pair containing the offset to the end of the parenthesized
-	 *		expression and the stack of atoms that were decomposed
-	 */
-	public function decomposeParenE($expr, $i) {
-		$buffer		= '';
-		$atomList	= array();
-		
-		$parenCount = 1;
-		$i += 1;
-		$beg = $i;
-		
-		$count = strlen($expr);
-		while ($i < $count && $parenCount > 0) {
-			switch ($expr[$i]) {
-				case '(':
-					$parenCount += 1;
-					break;
-				case ')':
-					$parenCount -= 1;
-					break;
-			}
-			$i++;
+		while (($top = array_pop($stack)) == true) {
+			$atomList[] = $top;
 		}
 		
-		if ($parenCount > 0)
-			die("Incorrect Syntax: You are missing $parenCount closing parentheses");
-		if ($parenCount < 0)
-			die("Incorrect Syntax: You are missing ".abs($parenCount)."opening parentheses");
-		
-		list($whocares, $atomList) = $this->decomposeE(substr($expr, $beg, $i - $beg - 1), 0);
-		return array($i, $atomList);
+		$this->atomList = $atomList;
+		return $this->atomList;
 	}
 	
 	/**
