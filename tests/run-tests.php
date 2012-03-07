@@ -36,8 +36,9 @@ require_once '../src/scurvy.php';
 function runTest($test) {
 	$diff = $test();
 	
-	if ( !$diff ) echo "ok\n";
-	else {
+	if ( !$diff ) {
+		echo "ok\n";
+	} else {
 		echo "Unexpected output:\n $diff\n";
 	}
 }
@@ -131,9 +132,27 @@ function test05() {
 	return getDiff('05_for.out', '05_for.run');
 }
 
+function test06() {
+	echo "Testing scope...";
+	
+	$tmpl = new Scurvy('06_scope.html', './');
+	$tmpl->set('a', array(
+				array( 'b' => 'first' ),
+				array( 'b' => 'second' ),
+				array( 'b' => 'third' ),
+				array( 'b' => 'fourth' )));
+	$tmpl->set('b', 'rumplestiltskin');
+	
+	$output = $tmpl->render();
+	file_put_contents('06_scope.run', $output);
+	
+	return getDiff('06_scope.out', '06_scope.run');
+}
+
 // Run our tests.
 runTest('test01');
 runTest('test02');
 runTest('test03');
 runTest('test04');
 runTest('test05');
+runTest('test06');
