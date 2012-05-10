@@ -72,7 +72,7 @@ class Scurvy {
 			$this->strings = $fuzzyType;
 			$this->name = $name;
 		} else if (file_exists($template_dir.$fuzzyType)) {
-			$this->strings = file($template_dir.$fuzzyType);
+			$this->strings = file($template_dir.$fuzzyType) or die("could not open file $fuzzyType");
 			$this->name = basename($fuzzyType);
 		} else
 			die("template: $fuzzyType is not a valid file or array");
@@ -257,7 +257,7 @@ class Scurvy {
 				foreach($matches[1] as $match) {
 					if (!isset($this->incTemplates[$match])) {
 						$info = pathinfo($match);
-						if ($info['extension'] = 'php') {
+						if ($info['extension'] == 'php') {
 							ob_start();
 							$this->require_file($match);
 							$output = array(ob_get_clean());
@@ -266,6 +266,12 @@ class Scurvy {
 							$this->incTemplates[$match] = new Scurvy($match, $this->template_dir);
 						}
 					}
+					
+					$match = preg_replace("/\//", "\/", $match);
+					$incOutput = $this->incTemplates[$match]->render();
+					$strings = preg_replace("/\{include\s$path\}/", $incOutput, $strings);
+					
+					$this->strings[$i] = preg_replace("/\{include\s$path\}/", $incOutput, $this->strings[$i]);
 				}
 			}
 			
