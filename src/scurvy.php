@@ -266,12 +266,6 @@ class Scurvy {
 							$this->incTemplates[$match] = new Scurvy($match, $this->template_dir);
 						}
 					}
-					
-					$match = preg_replace("/\//", "\/", $match);
-					$incOutput = $this->incTemplates[$match]->render();
-					$strings = preg_replace("/\{include\s$path\}/", $incOutput, $strings);
-					
-					$this->strings[$i] = preg_replace("/\{include\s$path\}/", $incOutput, $this->strings[$i]);
 				}
 			}
 			
