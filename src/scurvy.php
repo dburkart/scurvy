@@ -32,11 +32,6 @@
  * 		...
  * 		{/foreach}
  *
- * Known limitations:
- * 		- For if statements and for-loops, do not put multiple tags on the
- * 		  same line, i.e. {if var}...{/if} or {if}{if}...{/if}..., this breaks
- * 		  everything
- *
  * @author Dana Burkart
  */	
  
