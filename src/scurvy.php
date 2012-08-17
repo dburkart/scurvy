@@ -301,21 +301,19 @@ class Scurvy {
 		$re_end = $regex[1];
 
 		$numLines = count($this->strings);
-		$i = $start + 1;
-		$n = 1;
+		$i = $start;
+		$n = 0;
 		$line = 0;
 		
 		for ($i; $i < $numLines; $i++) {
 			$match = preg_match($re_beg, $this->strings[$i]);
 
 			if ($match) $n += 1;
-			else {
-				$match = preg_match($re_end, $this->strings[$i]);
-				if ($match) {
-					$n -= 1;
+			$match = preg_match($re_end, $this->strings[$i]);
+			if ($match) {
+				$n -= 1;
 
-					if ($n == 0) break;
-				}
+				if ($n == 0) break;
 			}
 			$line++;
 		}
@@ -323,10 +321,17 @@ class Scurvy {
 		if ($n > 0) {
 			echo "Opening brace on line $line of {$subName} has no closing brace\n<br />";
 		}
+		
+		if ($start != $i) {
+			$subTmpl = array_slice($this->strings, $start + 1, $i - ($start + 1));
+		} else {
+			$subTmpl = $this->strings[$start];
+			$beg = strpos($subTmpl, '}') + 1;
+			$subTmpl = array( substr($subTmpl, $beg, strrpos($subTmpl, '{') - $beg) );
+		}
+		
 
-		$subTmpl = array_slice($this->strings, $start + 1, $i - ($start + 1));
-
-		for ($j = $start + 1; $j <= $i; $j++) {
+		for ($j = $start; $j <= $i; $j++) {
 			//-- Just set the string to empty. Don't worry about removing it
 			//-- from the array
 			$this->strings[$j] = '';
