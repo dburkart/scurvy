@@ -1,20 +1,20 @@
-#!/usr/local/bin/php
+#!/usr/bin/php
 <?php
 /*
  *      run-tests.php
- *      
+ *
  *      Copyright 2010-2012 Dana Burkart <danaburkart@gmail.com>
- *      
+ *
  *      This program is free software; you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
  *      the Free Software Foundation; either version 2 of the License, or
  *      (at your option) any later version.
- *      
+ *
  *      This program is distributed in the hope that it will be useful,
  *      but WITHOUT ANY WARRANTY; without even the implied warranty of
  *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *      GNU General Public License for more details.
- *      
+ *
  *      You should have received a copy of the GNU General Public License
  *      along with this program; if not, write to the Free Software
  *      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
@@ -35,7 +35,7 @@ require_once '../src/scurvy.php';
 // not.
 function runTest($test) {
 	$diff = $test();
-	
+
 	if ( !$diff ) {
 		echo "ok\n";
 	} else {
@@ -43,15 +43,15 @@ function runTest($test) {
 	}
 }
 
-// Gets the diff between two files, and returns either the diff or false 
+// Gets the diff between two files, and returns either the diff or false
 // (signifying that the files are the same).
 function getDiff($a, $b) {
 	$diff = array();
-	
-	// Run the diff command, pass in -w, because change in whitespace doesn't 
+
+	// Run the diff command, pass in -w, because change in whitespace doesn't
 	// _really_ change the validity of our output
 	exec("diff -w $a $b", $diff);
-	
+
 	if ( empty($diff) )
 		return false;
 	else
@@ -65,57 +65,57 @@ function test01() {
 	$tmpl->set('var', 'test01');
 
 	$output = $tmpl->render();
-	
+
 	file_put_contents('01_var.run', $output);
-	
+
 	return getDiff('01_var.out', '01_var.run');
 }
 
 function test02() {
 	echo "Testing include statements...";
-	
+
 	$tmpl = new Scurvy('02_include.html', './');
 	$tmpl->set('var', 'test02');
-	
+
 	$output = $tmpl->render();
-	
+
 	file_put_contents('02_include.run', $output);
-	
+
 	return getDiff('02_include.out', '02_include.run');
 }
 
 function test03() {
 	echo "Testing expressions...";
-	
+
 	$tmpl = new Scurvy('03_expr.html', './');
 	$tmpl->set('a', 3);
 	$tmpl->set('b', 5);
 	$tmpl->set('c', false);
-	
+
 	$output = $tmpl->render();
 	file_put_contents('03_expr.run', $output);
-	
+
 	return getDiff('03_expr.out', '03_expr.run');
 }
 
 function test04() {
 	echo "Testing if statements...";
-	
+
 	$tmpl = new Scurvy('04_if.html', './');
 	$tmpl->set('a', 2);
 	$tmpl->set('b', 1);
 	$tmpl->set('c', false);
 	$tmpl->set('d', 4);
-	
+
 	$output = $tmpl->render();
 	file_put_contents('04_if.run', $output);
-	
+
 	return getDiff('04_if.out', '04_if.run');
 }
 
 function test05() {
 	echo "Testing foreach loops...";
-	
+
 	$tmpl = new Scurvy('05_for.html', './');
 	$tmpl->set('thing', array(
 				array( 'var' => 0 ),
@@ -125,16 +125,16 @@ function test05() {
 				array( 'var' => 4 ),
 				array( 'var' => 5 ),
 				array( 'var' => 6 )));
-	
+
 	$output = $tmpl->render();
 	file_put_contents('05_for.run', $output);
-	
+
 	return getDiff('05_for.out', '05_for.run');
 }
 
 function test06() {
 	echo "Testing scope...";
-	
+
 	$tmpl = new Scurvy('06_scope.html', './');
 	$tmpl->set('a', array(
 				array( 'b' => 'first' ),
@@ -142,10 +142,10 @@ function test06() {
 				array( 'b' => 'third' ),
 				array( 'b' => 'fourth' )));
 	$tmpl->set('b', 'rumplestiltskin');
-	
+
 	$output = $tmpl->render();
 	file_put_contents('06_scope.run', $output);
-	
+
 	return getDiff('06_scope.out', '06_scope.run');
 }
 
