@@ -50,6 +50,8 @@ class Scurvy {
 	private $RE_FOR_END	= '/\{\/foreach\}/';
 	private $RE_IF_BEG	= '/\{if\s([a-zA-Z0-9_=\>\<\-\+\(\)\s\'\!\*%]+)\}/';
 	private $RE_IF_END	= '/\{\/if\}/';
+	private $RE_COM_BEG	= '/^\{\*[.]*/';
+	private $RE_COM_END = '/[.]*\*\}/';
 
 	private $name;
 
@@ -201,6 +203,13 @@ class Scurvy {
 		for ($i = 0; $i < $count; $i++) {
 			$matches;
 			
+			$n = preg_match($this->RE_COM_BEG, $this->strings[$i], $matches);
+			if ($n > 0) {
+				$this->parseRecursive($i, 
+					array($this->RE_COM_BEG, $this->RE_COM_END), 'comment');
+				$this->strings[$i] = '';
+			}
+			
 			// Find all the variables. If the variable doesn't exist in our
 			// dictionary, stub it out.
 			preg_match_all($this->RE_VAR, $this->strings[$i], $matches);
@@ -337,7 +346,8 @@ class Scurvy {
 			$this->strings[$j] = '';
 		}
 		
-		return new Scurvy($subTmpl, $this->template_dir, $subName);
+		if ($subName != 'comment')
+			return new Scurvy($subTmpl, $this->template_dir, $subName);
 	}
 }
 
