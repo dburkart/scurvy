@@ -46,7 +46,7 @@ class Scurvy {
 	private $RE_IF_BEG	= '/\{if\s([a-zA-Z0-9_=\>\<\-\+\(\)\s\'\!\*%]+)\}/';
 	private $RE_IF_END	= '/\{\/if\}/';
 	private $RE_COM_BEG	= '/^\{\*[.]*/';
-	private $RE_COM_END = '/[.]*\*\}/';
+	private $RE_COM_END 	= '/[.]*\*\}/';
 
 	private $name;
 
@@ -198,6 +198,7 @@ class Scurvy {
 		for ($i = 0; $i < $count; $i++) {
 			$matches;
 			
+			// Remove all comments
 			$n = preg_match($this->RE_COM_BEG, $this->strings[$i], $matches);
 			if ($n > 0) {
 				$this->parseRecursive($i, 
