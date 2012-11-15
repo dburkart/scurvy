@@ -29,7 +29,7 @@
  * command line, and depends on the diff command to function.
  */
 
-require_once '../src/scurvy.php';
+require_once '../scurvy.php';
 
 // Runs the specified test and prints a message indicating whether it passed or
 // not.
