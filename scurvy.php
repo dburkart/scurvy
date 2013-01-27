@@ -96,11 +96,31 @@ class Scurvy {
 	}
 
 	/**
+	 * We use the __call method here to provide transparent access to render and
+	 * set (as we need to call these either on ourself or our cached template).
+	 * 
+	 * @param  string $method    the method name
+	 * @param  array $arguments the array of arguments to pass through
+	 * @return mixed            the result of the function
+	 */
+	public function __call($method, $arguments) {
+		if (!in_array($method, array('render', 'set'))) {
+			die("Scurvy: '$method' is not a valid scurvy method.");
+		}
+
+		if ($this->cache) {
+			return call_user_method_array($method, $this->cacheTemplate, $arguments);
+		} else {
+			return call_user_method_array($method, $this, $arguments);
+		}
+	}
+
+	/**
 	 * The render function goes through and renders the parsed document.
 	 *
 	 * @return string containing the rendered output.
 	 */
-	public function render() {
+	private function render() {
 		$strings = implode($this->strings);
 		
 		// Render includes
@@ -165,10 +185,10 @@ class Scurvy {
 	/**
 	 * Sets the value of a variable.
 	 *
-	 * @param var variable to set
-	 * @param val value to set var to
+	 * @param string $var variable to set
+	 * @param mixed $val value to set var to
 	 */
-	public function set($var, $val) {
+	private function set($var, $val) {
 		$this->vars[$var] = $val;
 		
 		// We also need to set $var on each sub-template. So recursively do that
@@ -213,7 +233,7 @@ class Scurvy {
 
 			// If our cache file already exists, load it up
 			if (file_exists($this->cacheFile)) {
-				$this->copyTemplate(unserialize(file_get_contents($this->cacheFile)));
+				$this->cacheTemplate = unserialize(file_get_contents($this->cacheFile));
 				return;
 			}
 		}
@@ -318,6 +338,7 @@ class Scurvy {
 		// If we've gotten here, we must need to cache this file
 		if ($this->cache) {
 			file_put_contents($this->cacheFile, serialize($this));
+			$this->cacheTemplate = $this;
 		}
 	}
 
@@ -382,17 +403,13 @@ class Scurvy {
 			return new Scurvy($subTmpl, $this->template_dir, false, $subName);
 	}
 
+	/**
+	 * Generates a checksum of this template.
+	 * 
+	 * @return string SHA1 checksum
+	 */
 	private function checksum() {
 		return sha1(implode($this->strings));
-	}
-
-	private function copyTemplate($template) {
-		$this->strings = $template->strings;
-		$this->vars = $template->vars;
-		$this->incTemplates = $template->incTemplates;
-		$this->forTemplates = $template->forTemplates;
-		$this->ifTemplates = $template->ifTemplates;
-		$this->expressions = $template->expressions;
 	}
 }
 
