@@ -46,9 +46,14 @@ class Scurvy {
 	private $RE_IF_BEG	= '/\{if\s([a-zA-Z0-9_=\>\<\-\+\(\)\s\'\!\*%\&\|]+)\}/';
 	private $RE_IF_END	= '/\{\/if\}/';
 	private $RE_COM_BEG	= '/^\{\*[.]*/';
-	private $RE_COM_END 	= '/[.]*\*\}/';
+	private $RE_COM_END = '/[.]*\*\}/';
+
+	private $CACHE_DIR	= '/tmp/scurvy';
 
 	private $name;
+	private $cache;
+	private $cacheFile;
+	private $cacheTemplate;
 
 	//-- Array containing the strings making up this template
 	private $strings;
@@ -64,15 +69,19 @@ class Scurvy {
 	
 	private $instances;
 	
-	public function __construct($fuzzyType, $template_dir, $name = 'template') {
+	public function __construct($fuzzyType, $template_dir, $cache = false, $name = 'template') {
 		if (is_array($fuzzyType)) {
 			$this->strings = $fuzzyType;
 			$this->name = $name;
 		} else if (file_exists($template_dir.$fuzzyType)) {
 			$this->strings = file($template_dir.$fuzzyType) or die("could not open file $fuzzyType");
 			$this->name = basename($fuzzyType);
-		} else
+		} else {
 			die("template: $fuzzyType is not a valid file or array");
+		}
+
+		// Are we caching templates?
+		$this->cache = $cache;
 		
 		// Initialize our variables
 		$this->template_dir = $template_dir;
@@ -81,7 +90,7 @@ class Scurvy {
 		$this->ifTemplates = array();
 		$this->incTemplates = array();
 		$this->expressions = array();
-		
+
 		// Parse the template
 		$this->parse();
 	}
@@ -194,6 +203,21 @@ class Scurvy {
 	 * output of sub-templates back into their parents.
 	 */
 	private function parse() {
+		if ($this->cache) {
+			$this->cacheFile = $this->CACHE_DIR.'/'.$this->name.$this->checksum();
+
+			// Make sure we have a cache directory to write to
+			if (!is_dir($this->CACHE_DIR)) {
+				mkdir($this->CACHE_DIR);
+			}
+
+			// If our cache file already exists, load it up
+			if (file_exists($this->cacheFile)) {
+				$this->copyTemplate(unserialize(file_get_contents($this->cacheFile)));
+				return;
+			}
+		}
+
 		$count = count($this->strings);
 		for ($i = 0; $i < $count; $i++) {
 			$matches;
@@ -266,9 +290,9 @@ class Scurvy {
 							ob_start();
 							$this->require_file($match);
 							$output = array(ob_get_clean());
-							$this->incTemplates[$match] = new Scurvy($output, $this->template_dir);
+							$this->incTemplates[$match] = new Scurvy($output, $this->template_dir, false, $this->name);
 						} else {
-							$this->incTemplates[$match] = new Scurvy($match, $this->template_dir);
+							$this->incTemplates[$match] = new Scurvy($match, $this->template_dir, false, $this->name);
 						}
 					}
 				}
@@ -289,6 +313,11 @@ class Scurvy {
 					$this->strings[$i] = preg_replace('/\{'.preg_quote($expr->getExpression()).'\}/', '{'.$exprId.'}', $this->strings[$i]);
 				}
 			}
+		}
+
+		// If we've gotten here, we must need to cache this file
+		if ($this->cache) {
+			file_put_contents($this->cacheFile, serialize($this));
 		}
 	}
 
@@ -350,7 +379,20 @@ class Scurvy {
 		}
 		
 		if ($subName != 'comment')
-			return new Scurvy($subTmpl, $this->template_dir, $subName);
+			return new Scurvy($subTmpl, $this->template_dir, false, $subName);
+	}
+
+	private function checksum() {
+		return sha1(implode($this->strings));
+	}
+
+	private function copyTemplate($template) {
+		$this->strings = $template->strings;
+		$this->vars = $template->vars;
+		$this->incTemplates = $template->incTemplates;
+		$this->forTemplates = $template->forTemplates;
+		$this->ifTemplates = $template->ifTemplates;
+		$this->expressions = $template->expressions;
 	}
 }
 

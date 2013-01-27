@@ -61,7 +61,7 @@ function getDiff($a, $b) {
 function test01() {
 	echo "Testing template variables...";
 
-	$tmpl = new Scurvy('01_var.html', './');
+	$tmpl = new Scurvy('01_var.html', './', true);
 	$tmpl->set('var', 'test01');
 
 	$output = $tmpl->render();
@@ -74,7 +74,7 @@ function test01() {
 function test02() {
 	echo "Testing include statements...";
 
-	$tmpl = new Scurvy('02_include.html', './');
+	$tmpl = new Scurvy('02_include.html', './', true);
 	$tmpl->set('var', 'test02');
 
 	$output = $tmpl->render();
@@ -87,7 +87,7 @@ function test02() {
 function test03() {
 	echo "Testing expressions...";
 
-	$tmpl = new Scurvy('03_expr.html', './');
+	$tmpl = new Scurvy('03_expr.html', './', true);
 	$tmpl->set('a', 3);
 	$tmpl->set('b', 5);
 	$tmpl->set('c', false);
@@ -101,7 +101,7 @@ function test03() {
 function test04() {
 	echo "Testing if statements...";
 
-	$tmpl = new Scurvy('04_if.html', './');
+	$tmpl = new Scurvy('04_if.html', './', true);
 	$tmpl->set('a', 2);
 	$tmpl->set('b', 1);
 	$tmpl->set('c', false);
@@ -116,7 +116,7 @@ function test04() {
 function test05() {
 	echo "Testing foreach loops...";
 
-	$tmpl = new Scurvy('05_for.html', './');
+	$tmpl = new Scurvy('05_for.html', './', true);
 	$tmpl->set('thing', array(
 				array( 'var' => 0 ),
 				array( 'var' => 1 ),
@@ -135,7 +135,7 @@ function test05() {
 function test06() {
 	echo "Testing scope...";
 
-	$tmpl = new Scurvy('06_scope.html', './');
+	$tmpl = new Scurvy('06_scope.html', './', true);
 	$tmpl->set('a', array(
 				array( 'b' => 'first' ),
 				array( 'b' => 'second' ),
@@ -150,9 +150,13 @@ function test06() {
 }
 
 // Run our tests.
+$time = microtime();
 runTest('test01');
 runTest('test02');
 runTest('test03');
 runTest('test04');
 runTest('test05');
 runTest('test06');
+$time = microtime() - $time;
+
+echo "Running time: $time\n";
