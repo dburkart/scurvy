@@ -23,3 +23,7 @@ Preceding textFollowing text
 
 
 same line
+a && b
+
+
+(c || d) && (b || c)

@@ -39,11 +39,11 @@ require_once 'expression.php';
 
 class Scurvy {
 	private $RE_VAR		= '/\{([a-zA-Z0-9_]+)\}/';
-	private $RE_EXPR	= '/\{([a-zA-Z0-9_=\>\<\-\+\(\)\s\'\!\*%]+)\}/';
+	private $RE_EXPR	= '/\{([a-zA-Z0-9_=\>\<\-\+\(\)\s\'\!\*%\&\|]+)\}/';
 	private $RE_INC		= '/\{include\s([a-zA-Z0-9_.\/]+)\}/';
 	private $RE_FOR_BEG	= '/\{foreach\s([a-zA-Z0-9_]+)\}/';
 	private $RE_FOR_END	= '/\{\/foreach\}/';
-	private $RE_IF_BEG	= '/\{if\s([a-zA-Z0-9_=\>\<\-\+\(\)\s\'\!\*%]+)\}/';
+	private $RE_IF_BEG	= '/\{if\s([a-zA-Z0-9_=\>\<\-\+\(\)\s\'\!\*%\&\|]+)\}/';
 	private $RE_IF_END	= '/\{\/if\}/';
 	private $RE_COM_BEG	= '/^\{\*[.]*/';
 	private $RE_COM_END 	= '/[.]*\*\}/';

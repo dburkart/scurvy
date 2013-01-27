@@ -60,6 +60,8 @@ define("EXPR_LEQ", -5);						// Less-than-or-equal test
 define("EXPR_GEQ", -6);						// Greater-than-or-equal test
 define("EXPR_NOT", 13);						// Not operator
 define("EXPR_PAR", 14);						// Parenthesis
+define("EXPR_AND", 7);						// AND operator
+define("EXPR_OR" , 8);						// OR operator
 
 // An atom is any entity that can't be broken down further. Operators, variables,
 // numbers, and strings are all atoms.
@@ -175,6 +177,20 @@ class Expression {
 					$b = $this->evaluate($registry, true);
 					$this->eval = $this->evaluate($registry, true) - $b;
 					
+					if ($recurse)
+						return $this->eval;
+					break;
+				case EXPR_AND:
+					$b = $this->evaluate($registry, true);
+					$this->eval = ($this->evaluate($registry, true) && $b);
+
+					if ($recurse)
+						return $this->eval;
+					break;
+				case EXPR_OR:
+					$b = $this->evaluate($registry, true);
+					$this->eval = ($this->evaluate($registry, true) || $b);
+
 					if ($recurse)
 						return $this->eval;
 					break;
@@ -341,7 +357,35 @@ class Expression {
 					}
 					
 					$this->addOperator( $atomList, $stack, EXPR_NEG );
-					break;	
+					break;
+				case '&':
+					$buffer = trim($buffer);
+					if (!empty($buffer)) {
+						$atomList[] = $this->newVar($buffer);
+						$buffer = '';
+					}
+					
+					$a = EXPR_AND;
+					if ($expr[$i+1] == '&') {
+						$i += 1;
+					}
+					
+					$this->addOperator( $atomList, $stack, $a );
+					break;
+				case '|':
+					$buffer = trim($buffer);
+					if (!empty($buffer)) {
+						$atomList[] = $this->newVar($buffer);
+						$buffer = '';
+					}
+					
+					$a = EXPR_OR;
+					if ($expr[$i+1] == '|') {
+						$i += 1;
+					}
+					
+					$this->addOperator( $atomList, $stack, $a );
+					break;
 				default:
 					$buffer = $buffer . $expr[$i];
 					break;

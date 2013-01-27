@@ -41,3 +41,15 @@ a <= d
 {/if}
 
 {if b}same line{/if}
+
+{if a && b}
+a && b
+{/if}
+
+{if (c && d) || (b && c)}
+(c && d) || (b && c)
+{/if}
+
+{if (c || d) && (b || c)}
+(c || d) && (b || c)
+{/if}
