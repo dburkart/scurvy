@@ -327,14 +327,21 @@ class Scurvy {
 			echo "Opening brace on line $line of {$subName} has no closing brace\n<br />";
 		}
 		
-		if ($start != $i) {
-			$subTmpl = array_slice($this->strings, $start + 1, $i - ($start + 1));
-		} else {
+		// Deal with edge-cases
+		// 
+		// - {block}TEXT{/block}
+		// - {block}
+		//   TEXT{/block}
+		if ($start == $i) {
 			$subTmpl = $this->strings[$start];
 			$beg = strpos($subTmpl, '}') + 1;
 			$subTmpl = array( substr($subTmpl, $beg, strrpos($subTmpl, '{') - $beg) );
+		} else if ($i == ($start + 1)) {
+			$subTmpl = $this->strings[$i];
+			$subTmpl = array( substr($subTmpl, 0, strrpos($subTmpl, '{')));
+		} else {
+			$subTmpl = array_slice($this->strings, $start + 1, $i - ($start + 1));
 		}
-		
 
 		for ($j = $start; $j <= $i; $j++) {
 			//-- Just set the string to empty. Don't worry about removing it
