@@ -31,10 +31,11 @@
 
 require_once '../scurvy.php';
 
+
 // Runs the specified test and prints a message indicating whether it passed or
 // not.
-function runTest($test) {
-	$diff = $test();
+function runTest($test, $cache) {
+	$diff = $test($cache);
 
 	if ( !$diff ) {
 		echo "ok\n";
@@ -58,10 +59,10 @@ function getDiff($a, $b) {
 		return implode( "\n", $diff);
 }
 
-function test01() {
+function test01($cache) {
 	echo "Testing template variables...";
 
-	$tmpl = new Scurvy('01_var.html', './', true);
+	$tmpl = new Scurvy('01_var.html', './', $cache);
 	$tmpl->set('var', 'test01');
 
 	$output = $tmpl->render();
@@ -71,10 +72,10 @@ function test01() {
 	return getDiff('01_var.out', '01_var.run');
 }
 
-function test02() {
+function test02($cache) {
 	echo "Testing include statements...";
 
-	$tmpl = new Scurvy('02_include.html', './', true);
+	$tmpl = new Scurvy('02_include.html', './', $cache);
 	$tmpl->set('var', 'test02');
 
 	$output = $tmpl->render();
@@ -84,10 +85,10 @@ function test02() {
 	return getDiff('02_include.out', '02_include.run');
 }
 
-function test03() {
+function test03($cache) {
 	echo "Testing expressions...";
 
-	$tmpl = new Scurvy('03_expr.html', './', true);
+	$tmpl = new Scurvy('03_expr.html', './', $cache);
 	$tmpl->set('a', 3);
 	$tmpl->set('b', 5);
 	$tmpl->set('c', false);
@@ -98,10 +99,10 @@ function test03() {
 	return getDiff('03_expr.out', '03_expr.run');
 }
 
-function test04() {
+function test04($cache) {
 	echo "Testing if statements...";
 
-	$tmpl = new Scurvy('04_if.html', './', true);
+	$tmpl = new Scurvy('04_if.html', './', $cache);
 	$tmpl->set('a', 2);
 	$tmpl->set('b', 1);
 	$tmpl->set('c', false);
@@ -113,10 +114,10 @@ function test04() {
 	return getDiff('04_if.out', '04_if.run');
 }
 
-function test05() {
+function test05($cache) {
 	echo "Testing foreach loops...";
 
-	$tmpl = new Scurvy('05_for.html', './', true);
+	$tmpl = new Scurvy('05_for.html', './', $cache);
 	$tmpl->set('thing', array(
 				array( 'var' => 0 ),
 				array( 'var' => 1 ),
@@ -132,10 +133,10 @@ function test05() {
 	return getDiff('05_for.out', '05_for.run');
 }
 
-function test06() {
+function test06($cache) {
 	echo "Testing scope...";
 
-	$tmpl = new Scurvy('06_scope.html', './', true);
+	$tmpl = new Scurvy('06_scope.html', './', $cache);
 	$tmpl->set('a', array(
 				array( 'b' => 'first' ),
 				array( 'b' => 'second' ),
@@ -149,14 +150,17 @@ function test06() {
 	return getDiff('06_scope.out', '06_scope.run');
 }
 
+$cache = false;
+if (in_array('-cache', $argv)) $cache = true;
+
 // Run our tests.
 $time = microtime();
-runTest('test01');
-runTest('test02');
-runTest('test03');
-runTest('test04');
-runTest('test05');
-runTest('test06');
+runTest('test01', $cache);
+runTest('test02', $cache);
+runTest('test03', $cache);
+runTest('test04', $cache);
+runTest('test05', $cache);
+runTest('test06', $cache);
 $time = microtime() - $time;
 
 echo "Running time: $time\n";
