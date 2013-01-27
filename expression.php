@@ -155,7 +155,7 @@ class Expression {
 					break;
 				case EXPR_DIV:
 					$b = $this->evaluate($registry, true);
-					$this->eval = $this->evaluate($registry, true) / $b;
+					$this->eval = (int)floor($this->evaluate($registry, true) / $b);
 					
 					if ($recurse)
 						return $this->eval;

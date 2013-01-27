@@ -39,11 +39,11 @@ require_once 'expression.php';
 
 class Scurvy {
 	private $RE_VAR		= '/\{([a-zA-Z0-9_]+)\}/';
-	private $RE_EXPR	= '/\{([a-zA-Z0-9_=\>\<\-\+\(\)\s\'\!\*%\&\|]+)\}/';
+	private $RE_EXPR	= '/\{([a-zA-Z0-9_=\>\<\-\+\(\)\s\'\!\*%\&\|\/]+)\}/';
 	private $RE_INC		= '/\{include\s([a-zA-Z0-9_.\/]+)\}/';
 	private $RE_FOR_BEG	= '/\{foreach\s([a-zA-Z0-9_]+)\}/';
 	private $RE_FOR_END	= '/\{\/foreach\}/';
-	private $RE_IF_BEG	= '/\{if\s([a-zA-Z0-9_=\>\<\-\+\(\)\s\'\!\*%\&\|]+)\}/';
+	private $RE_IF_BEG	= '/\{if\s([a-zA-Z0-9_=\>\<\-\+\(\)\s\'\!\*%\&\|\/]+)\}/';
 	private $RE_IF_END	= '/\{\/if\}/';
 	private $RE_COM_BEG	= '/^\{\*[.]*/';
 	private $RE_COM_END = '/[.]*\*\}/';
@@ -171,7 +171,7 @@ class Scurvy {
 		// Render expressions
 		foreach ($this->expressions as $key => $expr) {
 			$eval = (string)$expr->evaluate($this->vars);
-			$pregKey = preg_quote($key);
+			$pregKey = preg_quote($key, '/');
 			
 			$strings = preg_replace('/\{'.$pregKey.'\}/', $eval, $strings);
 		}
@@ -329,8 +329,8 @@ class Scurvy {
 					
 					if (!isset($this->expressions[$exprId]))
 						$this->expressions[$exprId] = $expr;
-						
-					$this->strings[$i] = preg_replace('/\{'.preg_quote($expr->getExpression()).'\}/', '{'.$exprId.'}', $this->strings[$i]);
+
+					$this->strings[$i] = preg_replace('/\{'.preg_quote($expr->getExpression(), '/').'\}/', '{'.$exprId.'}', $this->strings[$i]);
 				}
 			}
 		}
