@@ -48,12 +48,13 @@ class Scurvy {
 	private $RE_COM_BEG	= '/^\{\*[.]*/';
 	private $RE_COM_END = '/[.]*\*\}/';
 
+	//-- Cache
 	private $CACHE_DIR	= '/tmp/scurvy';
-
-	private $name;
 	private $cache;
 	private $cacheFile;
 	private $cacheTemplate;
+
+	private $name;
 
 	//-- Array containing the strings making up this template
 	private $strings;
@@ -139,7 +140,7 @@ class Scurvy {
 					$str = $instance->render();
 				}
 				
-				$pregKey = preg_quote($key);
+				$pregKey = preg_quote($key, '/');
 				$strings = preg_replace("/\{if:$pregKey:$iKey\}/", $str, $strings);
 			}
 		}
@@ -157,7 +158,7 @@ class Scurvy {
 					}
 				}
 				
-				$pregKey = preg_quote($key);
+				$pregKey = preg_quote($key, '/');
 				$strings = preg_replace("/\{for:$pregKey:$iKey\}/", $tmplGen, $strings);
 			}
 		}
