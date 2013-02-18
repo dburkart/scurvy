@@ -234,28 +234,13 @@ class Expression {
 		$buffer		= '';
 		$atomList	= array();
 		$stack		= array();
-		
-		$buffer 	= '';
-		$count 		= strLen( $expr );
+		$count 		= strlen($expr);
 		
 		$i = 0;
 		while ($i < $count) {
 			switch ($expr[$i]) {
-				case '=':
-					$buffer = trim($buffer);
-					if (!empty($buffer)) {
-						$atomList[] = $this->newVar($buffer);
-						$buffer = '';
-					}
-					
-					$this->addOperator( $atomList, $stack, EXPR_EQU );
-					break;
 				case '<':
-					$buffer = trim($buffer);
-					if (!empty($buffer)) {
-						$atomList[] = $this->newVar($buffer);
-						$buffer = '';
-					}
+					$this->pushVar($buffer, $atomList);
 					
 					$a = EXPR_LES;
 					if ($expr[$i+1] == '=') {
@@ -266,11 +251,7 @@ class Expression {
 					$this->addOperator( $atomList, $stack, $a );
 					break;
 				case '>':
-					$buffer = trim($buffer);
-					if (!empty($buffer)) {
-						$atomList[] = $this->newVar($buffer);
-						$buffer = '';
-					}
+					$this->pushVar($buffer, $atomList);
 					
 					$a = EXPR_GRE;
 					if ($expr[$i+1] == '=') {
@@ -280,35 +261,8 @@ class Expression {
 					
 					$this->addOperator( $atomList, $stack, $a );
 					break;
-				case '(':
-					$buffer = trim($buffer);
-					if (!empty($buffer)) {
-						$atomList[] = $this->newVar($buffer);
-						$buffer = '';
-					}
-				
-					array_push($stack, new Atom(EXPR_PAR));
-					break;
-				case ')':
-					$buffer = trim($buffer);
-					if (!empty($buffer)) {
-						$atomList[] = $this->newVar($buffer);
-						$buffer = '';
-					}
-				
-					$top = array_pop($stack);
-					while($top->type != EXPR_PAR && $top != NULL) {
-						$atomList[] = $top;
-						$top = array_pop($stack);
-					}
-					
-					break;
 				case '!':
-					$buffer = trim($buffer);
-					if (!empty($buffer)) {
-						$atomList[] = $this->newVar($buffer);
-						$buffer = '';
-					}
+					$this->pushVar($buffer, $atomList);
 					
 					$a = EXPR_NOT;
 					if ($expr[$i+1] == '=') {
@@ -318,52 +272,8 @@ class Expression {
 					
 					$this->addOperator( $atomList, $stack, $a );
 					break;
-				case '*':
-					if (!empty($buffer)) {
-						$atomList[] = $this->newVar($buffer);
-						$buffer = '';
-					}
-					
-					$this->addOperator( $atomList, $stack, EXPR_MUL );
-					break;
-				case '/':
-					if (!empty($buffer)) {
-						$atomList[] = $this->newVar($buffer);
-						$buffer = '';
-					}
-					
-					$this->addOperator( $atomList, $stack, EXPR_DIV );
-					break;
-				case '%':
-					if (!empty($buffer)) {
-						$atomList[] = $this->newVar($buffer);
-						$buffer = '';
-					}
-					
-					$this->addOperator( $atomList, $stack, EXPR_MOD );
-					break;
-				case '+':
-					if (!empty($buffer)) {
-						$atomList[] = $this->newVar($buffer);
-						$buffer = '';
-					}
-					
-					$this->addOperator( $atomList, $stack, EXPR_POS );
-					break;	
-				case '-':
-					if (!empty($buffer)) {
-						$atomList[] = $this->newVar($buffer);
-						$buffer = '';
-					}
-					
-					$this->addOperator( $atomList, $stack, EXPR_NEG );
-					break;
 				case '&':
-					$buffer = trim($buffer);
-					if (!empty($buffer)) {
-						$atomList[] = $this->newVar($buffer);
-						$buffer = '';
-					}
+					$this->pushVar($buffer, $atomList);
 					
 					$a = EXPR_AND;
 					if ($expr[$i+1] == '&') {
@@ -373,11 +283,7 @@ class Expression {
 					$this->addOperator( $atomList, $stack, $a );
 					break;
 				case '|':
-					$buffer = trim($buffer);
-					if (!empty($buffer)) {
-						$atomList[] = $this->newVar($buffer);
-						$buffer = '';
-					}
+					$this->pushVar($buffer, $atomList);
 					
 					$a = EXPR_OR;
 					if ($expr[$i+1] == '|') {
@@ -386,6 +292,44 @@ class Expression {
 					
 					$this->addOperator( $atomList, $stack, $a );
 					break;
+				case ')':
+					$this->pushVar($buffer, $atomList);
+				
+					$top = array_pop($stack);
+					while($top->type != EXPR_PAR && $top != NULL) {
+						$atomList[] = $top;
+						$top = array_pop($stack);
+					}
+					
+					break;
+				case '(':
+					$this->pushVar($buffer, $atomList);
+					array_push($stack, new Atom(EXPR_PAR));
+					break;
+				case '=':
+					$this->pushVar($buffer, $atomList);
+					$this->addOperator( $atomList, $stack, EXPR_EQU );
+					break;
+				case '*':
+					$this->pushVar($buffer, $atomList);
+					$this->addOperator( $atomList, $stack, EXPR_MUL );
+					break;
+				case '/':
+					$this->pushVar($buffer, $atomList);
+					$this->addOperator( $atomList, $stack, EXPR_DIV );
+					break;
+				case '%':
+					$this->pushVar($buffer, $atomList);
+					$this->addOperator( $atomList, $stack, EXPR_MOD );
+					break;
+				case '+':
+					$this->pushVar($buffer, $atomList);
+					$this->addOperator( $atomList, $stack, EXPR_POS );
+					break;	
+				case '-':
+					$this->pushVar($buffer, $atomList);
+					$this->addOperator( $atomList, $stack, EXPR_NEG );
+					break;
 				default:
 					$buffer = $buffer . $expr[$i];
 					break;
@@ -393,11 +337,7 @@ class Expression {
 			$i++;
 		}
 		
-		$buffer = trim($buffer);
-		if (strlen($buffer) > 0) {
-			$atomList[] = $this->newVar($buffer);
-			$buffer = '';
-		}
+		$this->pushVar($buffer, $atomList);
 		
 		while (($top = array_pop($stack)) == true) {
 			$atomList[] = $top;
@@ -422,6 +362,14 @@ class Expression {
 			return new Atom(EXPR_VAR, $str);
 		else {
 			return false;
+		}
+	}
+
+	public function pushVar(&$str, &$atomList) {
+		$str = trim($str);
+		if (strlen($str) > 0) {
+			$atomList[] = $this->newVar($str);
+			$str = '';
 		}
 	}
 	

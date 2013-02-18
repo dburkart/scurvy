@@ -38,18 +38,18 @@
 require_once 'expression.php';
 
 class Scurvy {
-	private $RE_VAR		= '/\{([a-zA-Z0-9_]+)\}/';
-	private $RE_EXPR	= '/\{([a-zA-Z0-9_=\>\<\-\+\(\)\s\'\!\*%\&\|\/]+)\}/';
-	private $RE_INC		= '/\{include\s([a-zA-Z0-9_.\/]+)\}/';
-	private $RE_FOR_BEG	= '/\{foreach\s([a-zA-Z0-9_]+)\}/';
-	private $RE_FOR_END	= '/\{\/foreach\}/';
-	private $RE_IF_BEG	= '/\{if\s([a-zA-Z0-9_=\>\<\-\+\(\)\s\'\!\*%\&\|\/]+)\}/';
-	private $RE_IF_END	= '/\{\/if\}/';
-	private $RE_COM_BEG	= '/^\{\*[.]*/';
-	private $RE_COM_END = '/[.]*\*\}/';
+	private $RE_VAR         = '/\{([a-zA-Z0-9_]+)\}/';
+	private $RE_EXPR        = '/\{([a-zA-Z0-9_=\>\<\-\+\(\)\s\'\!\*%\&\|\/]+)\}/';
+	private $RE_INC         = '/\{include\s([a-zA-Z0-9_.\/]+)\}/';
+	private $RE_FOR_BEG     = '/\{foreach\s([a-zA-Z0-9_]+)\}/';
+	private $RE_FOR_END     = '/\{\/foreach\}/';
+	private $RE_IF_BEG      = '/\{if\s([a-zA-Z0-9_=\>\<\-\+\(\)\s\'\!\*%\&\|\/]+)\}/';
+	private $RE_IF_END      = '/\{\/if\}/';
+	private $RE_COM_BEG     = '/^\{\*[.]*/';
+	private $RE_COM_END     = '/[.]*\*\}/';
 
 	//-- Cache
-	private $CACHE_DIR	= '/tmp/scurvy';
+	private $CACHE_DIR      = '/tmp/scurvy';
 	private $cache;
 	private $cacheFile;
 	private $cacheTemplate;
@@ -60,11 +60,11 @@ class Scurvy {
 	private $strings;
 
 	//-- Entities in this template, should be self-explanatory
-	private $vars;
-	private $incTemplates;
-	private $forTemplates;
-	private $ifTemplates;
-	private $expressions;
+	private $vars           = array();
+	private $incTemplates   = array();
+	private $forTemplates   = array();
+	private $ifTemplates    = array();
+	private $expressions    = array();
 	
 	private $template_dir;
 	
@@ -81,16 +81,8 @@ class Scurvy {
 			die("template: $fuzzyType is not a valid file or array");
 		}
 
-		// Are we caching templates?
 		$this->cache = $cache;
-		
-		// Initialize our variables
 		$this->template_dir = $template_dir;
-		$this->vars = array();
-		$this->forTemplates = array();
-		$this->ifTemplates = array();
-		$this->incTemplates = array();
-		$this->expressions = array();
 
 		// Parse the template
 		$this->parse();
