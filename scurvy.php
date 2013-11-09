@@ -38,15 +38,15 @@
 require_once 'expression.php';
 
 class Scurvy {
-	private $RE_VAR         = '/\{([a-zA-Z0-9_]+)\}/';
-	private $RE_EXPR        = '/\{([a-zA-Z0-9_=\>\<\-\+\(\)\s\'\!\*%\&\|\/]+)\}/';
-	private $RE_INC         = '/\{include\s([a-zA-Z0-9_.\/]+)\}/';
-	private $RE_FOR_BEG     = '/\{foreach\s([a-zA-Z0-9_]+)\}/';
-	private $RE_FOR_END     = '/\{\/foreach\}/';
-	private $RE_IF_BEG      = '/\{if\s([a-zA-Z0-9_=\>\<\-\+\(\)\s\'\!\*%\&\|\/]+)\}/';
-	private $RE_IF_END      = '/\{\/if\}/';
-	private $RE_COM_BEG     = '/^\{\*[.]*/';
-	private $RE_COM_END     = '/[.]*\*\}/';
+	const RE_VAR         = '/\{([a-zA-Z0-9_]+)\}/';
+	const RE_EXPR        = '/\{([a-zA-Z0-9_=\>\<\-\+\(\)\s\'\!\*%\&\|\/]+)\}/';
+	const RE_INC         = '/\{include\s([a-zA-Z0-9_.\/]+)\}/';
+	const RE_FOR_BEG     = '/\{foreach\s([a-zA-Z0-9_]+)\}/';
+	const RE_FOR_END     = '/\{\/foreach\}/';
+	const RE_IF_BEG      = '/\{if\s([a-zA-Z0-9_=\>\<\-\+\(\)\s\'\!\*%\&\|\/]+)\}/';
+	const RE_IF_END      = '/\{\/if\}/';
+	const RE_COM_BEG     = '/^\{\*[.]*/';
+	const RE_COM_END     = '/[.]*\*\}/';
 
 	//-- Cache
 	private $CACHE_DIR      = '/tmp/scurvy';
@@ -163,7 +163,13 @@ class Scurvy {
 		
 		// Render expressions
 		foreach ($this->expressions as $key => $expr) {
-			$eval = (string)$expr->evaluate($this->vars);
+			$eval = $expr->evaluate($this->vars);
+
+			// If we're an array, lets insert the number of items in the array.
+			if ( is_array( $eval ) ) {
+				$eval = count( $eval );
+			}
+
 			$pregKey = preg_quote($key, '/');
 			
 			$strings = preg_replace('/\{'.$pregKey.'\}/', $eval, $strings);
@@ -236,16 +242,16 @@ class Scurvy {
 			$matches;
 			
 			// Remove all comments
-			$n = preg_match($this->RE_COM_BEG, $this->strings[$i], $matches);
+			$n = preg_match(self::RE_COM_BEG, $this->strings[$i], $matches);
 			if ($n > 0) {
 				$this->parseRecursive($i, 
-					array($this->RE_COM_BEG, $this->RE_COM_END), 'comment');
+					array(self::RE_COM_BEG, self::RE_COM_END), 'comment');
 				$this->strings[$i] = '';
 			}
 			
 			// Find all the variables. If the variable doesn't exist in our
 			// dictionary, stub it out.
-			preg_match_all($this->RE_VAR, $this->strings[$i], $matches);
+			preg_match_all(self::RE_VAR, $this->strings[$i], $matches);
 			if (!empty($matches[0])) {
 				foreach ($matches[1] as $match) {
 					if (!isset($this->vars[$match]))
@@ -256,7 +262,7 @@ class Scurvy {
 			// Find all foreach-loops. Every time we find one, make a new
 			// template with the contents of that loop, and put a placeholder
 			// where it used to be.
-			$n = preg_match($this->RE_FOR_BEG, $this->strings[$i], $matches);
+			$n = preg_match(self::RE_FOR_BEG, $this->strings[$i], $matches);
 			if ($n > 0) {
 				$forName = $matches[1];
 				
@@ -264,13 +270,13 @@ class Scurvy {
 					$this->forTemplates[$forName] = array();
 				$n = count($this->forTemplates[$forName]);
 				$this->forTemplates[$forName][$n] = $this->parseRecursive($i,
-					array($this->RE_FOR_BEG, $this->RE_FOR_END),
+					array(self::RE_FOR_BEG, self::RE_FOR_END),
 					"{$this->name}_for_{$forName}_$n");
 				$this->strings[$i] = '{for:'.$forName.':'.$n.'}';
 			}
 
 			// Do the same general process for our if statement.
-			$n  = preg_match($this->RE_IF_BEG, $this->strings[$i], $matches);
+			$n  = preg_match(self::RE_IF_BEG, $this->strings[$i], $matches);
 			if ($n > 0) {
 				$ifExpr = new expression($matches[1]);
 				$exprId = $ifExpr->getExpressionId();
@@ -282,7 +288,7 @@ class Scurvy {
 					$this->ifTemplates[$exprId] = array();
 				$n = count($this->ifTemplates[$exprId]);
 				$this->ifTemplates[$exprId][$n] = $this->parseRecursive($i,
-					array($this->RE_IF_BEG, $this->RE_IF_END),
+					array(self::RE_IF_BEG, self::RE_IF_END),
 					"{$this->name}_if_{$exprId}_$n");
 				$this->strings[$i] = '{if:'.$exprId.':'.$n.'}';
 			}
@@ -294,7 +300,7 @@ class Scurvy {
 			// TODO: Move this block of code to the beginning, and instead of
 			// creating a template, just replace the include statement with
 			// the file contents of the include.
-			preg_match_all($this->RE_INC, $this->strings[$i], $matches);
+			preg_match_all(self::RE_INC, $this->strings[$i], $matches);
 			if (!empty($matches[0])) {
 				foreach($matches[1] as $match) {
 					if (!isset($this->incTemplates[$match])) {
@@ -314,7 +320,7 @@ class Scurvy {
 			// Find all expressions. We could probably get rid of this feature
 			// because expressions probably won't be used outside of
 			// if-statements.
-			preg_match_all($this->RE_EXPR, $this->strings[$i], $matches);
+			preg_match_all(self::RE_EXPR, $this->strings[$i], $matches);
 			if (!empty($matches[0])) {
 				foreach ($matches[1] as $match) {
 					$expr = new Expression($match);
