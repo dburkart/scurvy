@@ -1,0 +1,22 @@
+{
+	"name" : "dburkart/scurvy",
+	"type" : "library",
+	"description" : "Dead-simple PHP template engine",
+	"keywords" : ["template", "templating", "engine"],
+	"homepage" : "https://github.com/dburkart/scurvy",
+	"license" : "MIT",
+	"authors" : [
+		{
+			"name" : "Dana Burkart",
+			"email" : "dana.burkart@gmail.com",
+			"homepage" : "danaburkart.com",
+			"role" : "developer"
+		}
+	],
+	"require" : {
+		"php" : ">=5"
+	},
+	"autoload" : {
+		"psr-0" : { "Scurvy" : "" }
+	}
+}
