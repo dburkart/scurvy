@@ -225,7 +225,7 @@ class Scurvy {
 
 		$count = count($this->strings);
 		for ($i = 0; $i < $count; $i++) {
-			$matches;
+			$matches = null;
 			
 			// Remove all comments
 			$n = preg_match(self::RE_COM_BEG, $this->strings[$i], $matches);
