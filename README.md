@@ -16,3 +16,4 @@ created for those who want a simple solution.
 * Comprehensive debugging / error output
 * Speed optimization
 
+![travis-ci build status](https://travis-ci.org/dburkart/scurvy.svg?branch=master)
