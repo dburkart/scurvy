@@ -15,7 +15,7 @@
  * command line, and depends on the diff command to function.
  */
 
-require_once '../scurvy.php';
+require_once '../Scurvy.php';
 
 
 // Runs the specified test and prints a message indicating whether it passed or
