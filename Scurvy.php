@@ -88,9 +88,9 @@ class Scurvy {
 		}
 
 		if ($this->cache) {
-			return call_user_method_array($method, $this->cacheTemplate, $arguments);
+			return call_user_func_array(array($this->cacheTemplate, $method),  $arguments);
 		} else {
-			return call_user_method_array($method, $this, $arguments);
+			return call_user_func_array(array($this, $method), $arguments);
 		}
 	}
 
@@ -225,7 +225,7 @@ class Scurvy {
 
 		$count = count($this->strings);
 		for ($i = 0; $i < $count; $i++) {
-			$matches = null;
+			$matches;
 			
 			// Remove all comments
 			$n = preg_match(self::RE_COM_BEG, $this->strings[$i], $matches);
@@ -397,4 +397,3 @@ class Scurvy {
 		return sha1(implode($this->strings));
 	}
 }
-
